@@ -1,10 +1,16 @@
+import base64
+import hashlib
+import hmac
 import ipaddress
 import json
 import logging
 import os
 import random
 import re
+import secrets
 import time
+import uuid
+from urllib.parse import parse_qs, urlencode, urlsplit
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
@@ -204,6 +210,7 @@ class EeroClient:
         self._last_eeros: Optional[List[Dict[str, Any]]] = None
         self._is_demo_active: bool = False
         self._http_client: Optional[httpx.AsyncClient] = None
+        self._amazon_login_attempts: Dict[str, Dict[str, Any]] = {}
         self._demo_networks_store: Dict[str, Dict[str, Any]] = {}
         self._data_usage_endpoint_available: bool = True
         self._last_data_usage_check: float = 0.0
@@ -471,6 +478,277 @@ class EeroClient:
         if self.user_token:
             return {"s": self.user_token}
         return {}
+
+    def _prune_amazon_login_attempts(self) -> None:
+        """Remove one-time Amazon login attempts after their short expiry window."""
+        cutoff = time.time() - 600
+        self._amazon_login_attempts = {
+            state: attempt
+            for state, attempt in self._amazon_login_attempts.items()
+            if attempt.get("created_at", 0) >= cutoff
+        }
+
+    def start_amazon_login(self) -> Dict[str, Any]:
+        """Build an Amazon device OAuth/PKCE request without collecting Amazon credentials."""
+        if settings.demo_mode:
+            raise ValueError("Amazon sign-in is unavailable while Demo Mode is enabled.")
+
+        self._prune_amazon_login_attempts()
+        verifier = secrets.token_urlsafe(32)
+        state = secrets.token_urlsafe(32)
+        flow_id = secrets.token_urlsafe(32)
+        serial = uuid.uuid4().hex.upper()
+        client_id = (serial + "#A2W01JEFAJFTXI").encode("utf-8").hex()
+        challenge = base64.urlsafe_b64encode(
+            hashlib.sha256(verifier.encode("ascii")).digest()
+        ).rstrip(b"=").decode("ascii")
+
+        fields = {
+            "openid.assoc_handle": "amzn_eero_mobile_android_us",
+            "pageId": "eero_mobile_accounts",
+            "language": "en_US",
+            "openid.ns": "http://specs.openid.net/auth/2.0",
+            "openid.mode": "checkid_setup",
+            "openid.claimed_id": "http://specs.openid.net/auth/2.0/identifier_select",
+            "openid.identity": "http://specs.openid.net/auth/2.0/identifier_select",
+            "openid.ns.pape": "http://specs.openid.net/extensions/pape/1.0",
+            "openid.pape.max_auth_age": "0",
+            "openid.ns.oa2": "http://www.amazon.com/ap/ext/oauth/2",
+            "openid.oa2.response_type": "code",
+            "openid.oa2.scope": "device_auth_access",
+            "openid.oa2.client_id": "device:" + client_id,
+            "openid.oa2.code_challenge": challenge,
+            "openid.oa2.code_challenge_method": "S256",
+            "openid.return_to": "https://www.amazon.com/ap/maplanding?state=" + state,
+            "accountStatusPolicy": "P1",
+        }
+        self._amazon_login_attempts[state] = {
+            "state": state,
+            "verifier": verifier,
+            "client_id": client_id,
+            "flow_id_hash": hashlib.sha256(flow_id.encode("ascii")).hexdigest(),
+            "created_at": time.time(),
+        }
+
+        # Bound memory use if a browser repeatedly starts but never completes sign-in.
+        if len(self._amazon_login_attempts) > 10:
+            oldest = min(
+                self._amazon_login_attempts,
+                key=lambda key: self._amazon_login_attempts[key]["created_at"],
+            )
+            self._amazon_login_attempts.pop(oldest, None)
+
+        return {
+            "status": "success",
+            "authorization_url": "https://www.amazon.com/ap/signin?" + urlencode(fields),
+            "flow_id": flow_id,
+            "expires_in": 600,
+        }
+
+    @staticmethod
+    def _amazon_error_code(payload: Any) -> str:
+        """Return a short, non-sensitive API error identifier for user feedback."""
+        if not isinstance(payload, dict):
+            return "unknown_error"
+        meta = payload.get("meta")
+        candidates = [
+            payload.get("error"),
+            payload.get("code"),
+            meta.get("error") if isinstance(meta, dict) else None,
+            meta.get("code") if isinstance(meta, dict) else None,
+        ]
+        for candidate in candidates:
+            if isinstance(candidate, str) and re.fullmatch(r"[A-Za-z0-9._-]{1,80}", candidate):
+                return candidate
+        return "unknown_error"
+
+    async def complete_amazon_login(self, return_url: str, flow_id: str) -> Dict[str, Any]:
+        """Exchange Amazon's one-time PKCE code for an eero session and persist it."""
+        if len(return_url) > 8192 or len(flow_id) < 32 or len(flow_id) > 128:
+            raise ValueError(tr("eero.amazon_invalid_return"))
+
+        try:
+            returned = urlsplit(return_url.strip())
+            port = returned.port
+        except ValueError:
+            raise ValueError(tr("eero.amazon_invalid_return"))
+
+        if (
+            returned.scheme != "https"
+            or returned.hostname != "www.amazon.com"
+            or port not in (None, 443)
+            or returned.username is not None
+            or returned.password is not None
+            or returned.path != "/ap/maplanding"
+            or returned.fragment
+        ):
+            raise ValueError(tr("eero.amazon_invalid_return"))
+
+        try:
+            query = parse_qs(returned.query, keep_blank_values=True, max_num_fields=20)
+        except ValueError:
+            raise ValueError(tr("eero.amazon_invalid_return"))
+
+        states = query.get("state", [])
+        if len(states) != 1 or not states[0] or len(states[0]) > 128:
+            raise ValueError(tr("eero.amazon_invalid_return"))
+
+        state = states[0]
+        self._prune_amazon_login_attempts()
+        attempt = self._amazon_login_attempts.get(state)
+        if (
+            not attempt
+            or not hmac.compare_digest(attempt["state"], state)
+            or not hmac.compare_digest(
+                attempt["flow_id_hash"],
+                hashlib.sha256(flow_id.encode("ascii", errors="ignore")).hexdigest(),
+            )
+        ):
+            raise ValueError(tr("eero.amazon_flow_expired"))
+
+        # Consume state before any network request so a code cannot be replayed.
+        self._amazon_login_attempts.pop(state, None)
+
+        if any(query.get(key) for key in ("error", "openid.error", "openid.oa2.error")):
+            raise ValueError(tr("eero.amazon_cancelled"))
+
+        codes = query.get("openid.oa2.authorization_code", [])
+        if len(codes) != 1:
+            raise ValueError(tr("eero.amazon_invalid_return"))
+        authorization_code = codes[0]
+        if (
+            not authorization_code
+            or len(authorization_code) > 8192
+            or any(ord(char) <= 32 or ord(char) >= 127 for char in authorization_code)
+        ):
+            raise ValueError(tr("eero.amazon_invalid_return"))
+
+        scopes = query.get("openid.oa2.scope", [])
+        if scopes and (len(scopes) != 1 or scopes[0] != "device_auth_access"):
+            raise ValueError(tr("eero.amazon_invalid_return"))
+
+        token_payload = {
+            "app_name": "EeroDesktop",
+            "app_version": "1.0.0",
+            "source_token_type": "authorization_code",
+            "source_token": authorization_code,
+            "requested_token_type": "access_token",
+            "code_verifier": attempt["verifier"],
+            "code_algorithm": "SHA-256",
+            "client_id": attempt["client_id"],
+            "client_domain": "DeviceLegacy",
+        }
+        headers = {"Accept": "application/json"}
+
+        async with httpx.AsyncClient(timeout=httpx.Timeout(30.0, connect=10.0)) as client:
+            amazon_response = await client.post(
+                "https://api.amazon.com/auth/token",
+                json=token_payload,
+                headers={
+                    **headers,
+                    "x-amzn-identity-auth-domain": "api.amazon.com",
+                },
+            )
+            if amazon_response.status_code != 200:
+                error_code = self._amazon_error_code(amazon_response.json() if amazon_response.content else {})
+                raise ValueError(
+                    tr("eero.amazon_exchange_failed", status=amazon_response.status_code, error=error_code)
+                )
+
+            try:
+                amazon_tokens = amazon_response.json()
+            except ValueError:
+                raise ValueError(tr("eero.amazon_exchange_failed", status=200, error="invalid_response"))
+
+            if len(amazon_response.content) > 65536 or not isinstance(amazon_tokens, dict):
+                raise ValueError(tr("eero.amazon_exchange_failed", status=200, error="invalid_response"))
+
+            access_token = amazon_tokens.get("access_token")
+            token_type = amazon_tokens.get("token_type", "")
+            if (
+                not isinstance(access_token, str)
+                or not access_token
+                or len(access_token) > 8192
+                or not isinstance(token_type, str)
+                or token_type.lower() != "bearer"
+                or any(ord(char) <= 32 or ord(char) >= 127 or char in ";," for char in access_token)
+            ):
+                raise ValueError(tr("eero.amazon_exchange_failed", status=200, error="invalid_token"))
+
+            eero_response = await client.post(
+                f"{EERO_API_BASE}/login/amazon",
+                data={"auth_token": access_token, "create_account": "false"},
+                headers={
+                    **headers,
+                    "User-Agent": "eero-ios/3.47.0",
+                },
+            )
+
+            eero_payload: Dict[str, Any] = {}
+            try:
+                parsed_eero = eero_response.json()
+                if isinstance(parsed_eero, dict):
+                    eero_payload = parsed_eero
+            except ValueError:
+                pass
+
+            if eero_response.status_code != 200:
+                error_code = self._amazon_error_code(eero_payload)
+                if error_code == "error.login.unknown":
+                    raise ValueError(tr("eero.amazon_account_not_linked"))
+                raise ValueError(
+                    tr("eero.amazon_eero_login_failed", status=eero_response.status_code, error=error_code)
+                )
+
+            eero_data = eero_payload.get("data")
+            if not isinstance(eero_data, dict):
+                eero_data = {}
+            session_token = eero_response.cookies.get("s") or eero_data.get("user_token") or eero_payload.get("user_token")
+            if (
+                not isinstance(session_token, str)
+                or not session_token
+                or len(session_token) > 8192
+                or any(ord(char) <= 32 or ord(char) >= 127 or char in ";," for char in session_token)
+            ):
+                raise ValueError(tr("eero.amazon_session_missing"))
+
+            session_headers = {
+                **headers,
+                "User-Agent": "eero-ios/3.47.0",
+                "Cookie": "s=" + session_token,
+            }
+            account_response = await client.get(f"{EERO_API_BASE}/account", headers=session_headers)
+            if account_response.status_code != 200:
+                account_response = await client.get(f"{EERO_API_BASE}/user", headers=session_headers)
+            if account_response.status_code != 200:
+                raise ValueError(tr("eero.amazon_session_invalid"))
+
+            try:
+                account_payload = account_response.json()
+            except ValueError:
+                raise ValueError(tr("eero.amazon_session_invalid"))
+            account_data = account_payload.get("data") if isinstance(account_payload, dict) else None
+            if not isinstance(account_data, dict):
+                raise ValueError(tr("eero.amazon_session_invalid"))
+
+        self.user_token = session_token
+        self.saved_live_token = session_token
+        self._is_demo_active = False
+        self.current_network_id = None
+        self.available_networks = []
+        self.account_info = account_data
+
+        try:
+            account = await self.fetch_account_info()
+        except Exception as exc:
+            logger.warning("Amazon sign-in account refresh failed (%s)", type(exc).__name__)
+            account = self.account_info or {}
+
+        self.saved_live_network_id = self.current_network_id
+        self.saved_live_account_info = account or self.account_info
+        self.saved_live_networks = list(self.available_networks)
+        self.save_session()
+        return {"status": "success", "account": account or self.account_info or {}}
 
     # =========================================================================
     # AUTENTICAZIONE EERO API (2FA OTP)
