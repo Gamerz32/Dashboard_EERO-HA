@@ -39,11 +39,57 @@
     };
   </script>
 
+  <!-- Home Assistant ingress path support for API calls and client-side navigation -->
+  <script>
+    window.EERO_INGRESS_PATH = {{ ingress_path | tojson }};
+    window.EERO_APP_PATHNAME = function() {
+      const pathname = window.location.pathname || "/";
+      const prefix = window.EERO_INGRESS_PATH;
+      if (!prefix) return pathname;
+      if (pathname === prefix) return "/";
+      return pathname.startsWith(prefix + "/") ? pathname.slice(prefix.length) : pathname;
+    };
+    if (window.EERO_INGRESS_PATH) {
+      const prefix = window.EERO_INGRESS_PATH.replace(/\/+$/, "");
+      const withIngressPrefix = function(value) {
+        if (typeof value === "string") {
+          if (value.startsWith("/") && !value.startsWith("//") &&
+              value !== prefix && !value.startsWith(prefix + "/")) {
+            return prefix + value;
+          }
+          return value;
+        }
+        if (value instanceof URL) {
+          const url = new URL(value.href);
+          if (url.origin === window.location.origin &&
+              !url.pathname.startsWith(prefix + "/") && url.pathname !== prefix) {
+            url.pathname = prefix + url.pathname;
+          }
+          return url;
+        }
+        if (value instanceof Request) {
+          return new Request(withIngressPrefix(new URL(value.url)), value);
+        }
+        return value;
+      };
+      const originalFetch = window.fetch.bind(window);
+      window.fetch = function(input, init) {
+        return originalFetch(withIngressPrefix(input), init);
+      };
+      ["pushState", "replaceState"].forEach(function(method) {
+        const original = window.history[method].bind(window.history);
+        window.history[method] = function(state, title, url) {
+          return original(state, title, withIngressPrefix(url));
+        };
+      });
+    }
+  </script>
+
   <!-- Favicon / SVG Icon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230067c0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M5 12.55a11 11 0 0 1 14.08 0'/><path d='M1.42 9a16 16 0 0 1 21.16 0'/><path d='M8.53 16.11a6 6 0 0 1 6.95 0'/><line x1='12' y1='20' x2='12.01' y2='20'/></svg>">
   
   <!-- PWA Manifest & Mobile Capability Tags -->
-  <link rel="manifest" href="/static/manifest.json">
+  <link rel="manifest" href="{{ ingress_path }}/static/manifest.json">
   <meta name="theme-color" content="#0067c0">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -51,10 +97,10 @@
   <meta name="apple-mobile-web-app-title" content="eero Dashboard">
   
   <!-- Local Self-Hosted Fonts: Inter & JetBrains Mono (Offline Bundle - Issue #58) -->
-  <link rel="stylesheet" href="/static/css/fonts.css?v={{ app_version }}.b{{ build_number }}">
+  <link rel="stylesheet" href="{{ ingress_path }}/static/css/fonts.css?v={{ app_version }}.b{{ build_number }}">
   
   <!-- Tailwind CSS Local Bundle -->
-  <script src="/static/vendor/tailwind.min.js"></script>
+  <script src="{{ ingress_path }}/static/vendor/tailwind.min.js"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -81,17 +127,17 @@
   </script>
   
   <!-- Custom Stylesheet (Windows 11 Fluent Design) -->
-  <link rel="stylesheet" href="/static/css/styles.css?v={{ app_version }}.b{{ build_number }}.sidebarv3">
+  <link rel="stylesheet" href="{{ ingress_path }}/static/css/styles.css?v={{ app_version }}.b{{ build_number }}.sidebarv3">
 
   <!-- Chart.js & Alpine.js Local Bundles (Offline - Issue #58) -->
-  <script src="/static/vendor/chart.umd.min.js"></script>
-  <script defer src="/static/vendor/alpine.min.js"></script>
+  <script src="{{ ingress_path }}/static/vendor/chart.umd.min.js"></script>
+  <script defer src="{{ ingress_path }}/static/vendor/alpine.min.js"></script>
 
   <!-- Lucide Icons Local Bundle (Offline - Issue #58) -->
-  <script src="/static/vendor/lucide.min.js"></script>
+  <script src="{{ ingress_path }}/static/vendor/lucide.min.js"></script>
 
   <!-- App Logic -->
-  <script src="/static/js/app.js?v={{ app_version }}.b{{ build_number }}"></script>
+  <script src="{{ ingress_path }}/static/js/app.js?v={{ app_version }}.b{{ build_number }}"></script>
 
   <!-- Critical Layout Fix: Sidebar Strict Width on Desktop, Hidden on Mobile -->
   <style>

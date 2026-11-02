@@ -1,0 +1,52 @@
+configuration:
+  eero_user_token:
+    name: eero user token
+    description: Optional advanced token; most users should authenticate in the dashboard.
+  eero_network_id:
+    name: eero network ID
+    description: Optional network ID for accounts that need to select a specific network.
+  dashboard_lang:
+    name: Dashboard language
+    description: Language used by the dashboard (en or it).
+  poll_interval:
+    name: Poll interval
+    description: Seconds between dashboard telemetry polls.
+  tz:
+    name: Time zone
+    description: Time zone used for scheduled reports and logs, for example America/Toronto.
+  require_local_auth:
+    name: Require dashboard login
+    description: Add a second login after Home Assistant has authenticated the user.
+  admin_user:
+    name: Admin username
+    description: Username for the local dashboard administrator.
+  admin_password:
+    name: Admin password
+    description: Optional password for the local dashboard administrator.
+  mqtt_enabled:
+    name: Enable MQTT
+    description: Publish Home Assistant sensors and eero client presence trackers.
+  mqtt_broker_host:
+    name: MQTT broker host
+    description: Leave blank to use the Home Assistant MQTT service automatically.
+  mqtt_broker_port:
+    name: MQTT broker port
+    description: Used with a manually configured MQTT broker.
+  mqtt_username:
+    name: MQTT username
+    description: Optional manual MQTT broker username; Home Assistant service credentials are used by default.
+  mqtt_password:
+    name: MQTT password
+    description: Optional manual MQTT broker password.
+  mqtt_base_topic:
+    name: MQTT base topic
+    description: Root topic used for dashboard telemetry.
+  mqtt_ha_discovery_prefix:
+    name: MQTT discovery prefix
+    description: Home Assistant MQTT discovery topic prefix.
+  mqtt_discovery_enabled:
+    name: MQTT discovery
+    description: Publish retained Home Assistant discovery configuration.
+  mqtt_publish_interval:
+    name: MQTT publish interval
+    description: Seconds between MQTT telemetry updates.

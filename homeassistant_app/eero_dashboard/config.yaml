@@ -1,0 +1,53 @@
+name: "eero Dashboard"
+version: "1.0.0"
+slug: "eero_dashboard"
+description: "eero mesh dashboard shown in the Home Assistant sidebar."
+url: "https://github.com/Gamerz32/Dashboard_EERO-HA"
+arch:
+  - amd64
+  - aarch64
+startup: application
+boot: auto
+init: false
+ingress: true
+ingress_port: 8000
+panel_icon: "mdi:router-wireless"
+panel_title: "eero Dashboard"
+services:
+  - "mqtt:want"
+options:
+  eero_user_token: ""
+  eero_network_id: ""
+  dashboard_lang: "en"
+  poll_interval: 10
+  tz: "UTC"
+  require_local_auth: false
+  admin_user: "admin"
+  admin_password: ""
+  mqtt_enabled: true
+  mqtt_broker_host: ""
+  mqtt_broker_port: 1883
+  mqtt_username: ""
+  mqtt_password: ""
+  mqtt_base_topic: "eero_dashboard"
+  mqtt_ha_discovery_prefix: "homeassistant"
+  mqtt_discovery_enabled: true
+  mqtt_publish_interval: 30
+schema:
+  eero_user_token: password
+  eero_network_id: str
+  dashboard_lang: str
+  poll_interval: int
+  tz: str
+  require_local_auth: bool
+  admin_user: str
+  admin_password: password
+  mqtt_enabled: bool
+  mqtt_broker_host: str
+  mqtt_broker_port: port
+  mqtt_username: str
+  mqtt_password: password
+  mqtt_base_topic: str
+  mqtt_ha_discovery_prefix: str
+  mqtt_discovery_enabled: bool
+  mqtt_publish_interval: int
