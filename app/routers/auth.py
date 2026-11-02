@@ -23,6 +23,17 @@ class VerifyOTPRequest(BaseModel):
     user_token: Optional[str] = Field(None, description="Token temporaneo restituito dalla richiesta di login")
 
 
+
+class AmazonReturnRequest(BaseModel):
+    return_url: str = Field(
+        ...,
+        min_length=1,
+        max_length=8192,
+        description="Full Amazon return address containing the one-time authorization code",
+    )
+    flow_id: str = Field(..., min_length=32, max_length=128)
+
+
 class ModeSwitchRequest(BaseModel):
     demo: bool = Field(..., description="True per attivare Demo Mode, False per tornare a Live Network")
 
@@ -93,6 +104,66 @@ async def switch_mode(payload: ModeSwitchRequest):
         "network_id": eero_client.current_network_id,
         "account": eero_client.account_info
     }
+
+
+@router.post("/amazon/start")
+async def start_amazon_login(request: Request):
+    """Create a short-lived Amazon PKCE sign-in attempt."""
+    ip = get_client_ip(request)
+    is_limited, retry_after = cloud_auth_limiter.record_hit(ip)
+    if is_limited:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=tr("auth.too_many_requests", retry_after=retry_after),
+            headers={"Retry-After": str(retry_after)},
+        )
+
+    try:
+        return eero_client.start_amazon_login()
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    except Exception as exc:
+        logger.warning("Could not start Amazon sign-in (%s)", type(exc).__name__)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=tr("eero.amazon_start_failed"),
+        )
+
+
+@router.post("/amazon/complete")
+async def complete_amazon_login(payload: AmazonReturnRequest, request: Request):
+    """Validate Amazon's return address, exchange the one-time code, and store the eero session."""
+    ip = get_client_ip(request)
+    is_limited, retry_after = cloud_auth_limiter.record_hit(ip)
+    if is_limited:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=tr("auth.too_many_requests", retry_after=retry_after),
+            headers={"Retry-After": str(retry_after)},
+        )
+
+    try:
+        result = await eero_client.complete_amazon_login(payload.return_url.strip(), payload.flow_id)
+        try:
+            from app.services.poller import background_poller
+            background_poller.invalidate_cache()
+            await background_poller.poll_once()
+        except Exception as poll_error:
+            log_event(
+                logger,
+                logging.WARNING,
+                "log_system.poller_refresh_otp_failed",
+                error=type(poll_error).__name__,
+            )
+        return result
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    except Exception as exc:
+        logger.warning("Amazon sign-in failed (%s)", type(exc).__name__)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=tr("eero.amazon_complete_failed"),
+        )
 
 
 @router.post("/login")

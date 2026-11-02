@@ -137,6 +137,10 @@ document.addEventListener('alpine:init', () => {
     otpCode: '',
     tempUserToken: null,
     otpSent: false,
+    amazonAuthStep: false,
+    amazonSignInUrl: '',
+    amazonFlowId: '',
+    amazonReturnUrl: '',
     authLoading: false,
     authError: '',
 
@@ -1458,6 +1462,79 @@ document.addEventListener('alpine:init', () => {
         this.authError = err.message;
         const title = this.t('js.request_otp.login_error');
         this.showToast(title, err.message, "error");
+      } finally {
+        this.authLoading = false;
+      }
+    },
+
+    async startAmazonLogin() {
+      this.authLoading = true;
+      this.authError = '';
+      this.amazonAuthStep = true;
+      this.amazonSignInUrl = '';
+      this.amazonFlowId = '';
+      this.amazonReturnUrl = '';
+      this.otpSent = false;
+      this.tempUserToken = null;
+      try {
+        const res = await fetch('/api/auth/amazon/start', { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || this.t('auth.amazon_start_failed'));
+        this.amazonSignInUrl = data.authorization_url || '';
+        this.amazonFlowId = data.flow_id || '';
+        if (!this.amazonSignInUrl || !this.amazonFlowId) throw new Error(this.t('auth.amazon_start_failed'));
+      } catch (err) {
+        this.authError = err.message;
+        this.showToast(this.t('js.request_otp.login_error'), err.message, 'error');
+      } finally {
+        this.authLoading = false;
+      }
+    },
+
+    cancelAmazonLogin() {
+      this.amazonAuthStep = false;
+      this.amazonSignInUrl = '';
+      this.amazonFlowId = '';
+      this.amazonReturnUrl = '';
+      this.authError = '';
+    },
+
+    async completeAmazonLogin() {
+      if (!this.amazonReturnUrl.trim()) return;
+      this.authLoading = true;
+      this.authError = '';
+      try {
+        const res = await fetch('/api/auth/amazon/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            return_url: this.amazonReturnUrl.trim(),
+            flow_id: this.amazonFlowId
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || this.t('auth.amazon_start_failed'));
+
+        this.isAuthenticated = true;
+        this.isDemoMode = false;
+        this.hasSavedLiveToken = true;
+        this.otpSent = false;
+        this.amazonAuthStep = false;
+        this.amazonSignInUrl = '';
+        this.amazonFlowId = '';
+        this.amazonReturnUrl = '';
+        this.tempUserToken = null;
+        await this.checkAuthStatus();
+        this.showToast(
+          this.t('js.verify_otp.login_successful'),
+          this.t('js.verify_otp.connected_to_eero_mesh'),
+          'success'
+        );
+        await this.refreshAllData();
+        this.startPolling();
+      } catch (err) {
+        this.authError = err.message;
+        this.showToast(this.t('js.verify_otp.otp_error'), err.message, 'error');
       } finally {
         this.authLoading = false;
       }

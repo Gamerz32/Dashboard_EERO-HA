@@ -5978,7 +5978,7 @@
         </div>
 
         <!-- Step 1: Email/Phone Input -->
-        <div x-show="!otpSent" class="space-y-4 text-left">
+        <div x-show="!otpSent && !amazonAuthStep" class="space-y-4 text-left">
           <div>
             <label class="block text-xs font-medium text-slate-700 dark:text-slate-400 mb-1" x-text="t('auth.identifier_label')"></label>
             <input 
@@ -5992,6 +5992,64 @@
             :disabled="authLoading || !loginIdentifier"
             class="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm shadow-lg shadow-sky-600/30 transition disabled:opacity-50 cursor-pointer">
             <span x-text="authLoading ? t('auth.sending_otp') : t('auth.send_otp')"></span>
+          </button>
+
+          <div class="flex items-center gap-3 py-1 text-[11px] text-slate-500 dark:text-slate-400">
+            <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700"></span>
+            <span x-text="t('auth.amazon_or')"></span>
+            <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700"></span>
+          </div>
+          <button
+            @click="startAmazonLogin()"
+            :disabled="authLoading"
+            class="w-full py-3 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-sm border border-slate-700 transition disabled:opacity-50 cursor-pointer">
+            <span x-text="authLoading ? t('auth.amazon_preparing') : t('auth.amazon_sign_in')"></span>
+          </button>
+        </div>
+
+        <!-- Amazon OAuth sign-in (Amazon credentials stay on Amazon) -->
+        <div x-show="amazonAuthStep" class="space-y-4 text-left" style="display: none;">
+          <div class="space-y-2">
+            <p class="text-xs text-slate-600 dark:text-slate-300" x-text="t('auth.amazon_instructions')"></p>
+            <p class="text-[11px] text-emerald-700 dark:text-emerald-300" x-text="t('auth.amazon_secure_note')"></p>
+          </div>
+          <a
+            x-show="amazonSignInUrl"
+            :href="amazonSignInUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="block w-full py-3 rounded-xl bg-slate-900 hover:bg-black text-white text-center font-bold text-sm border border-slate-700 transition"
+            x-text="t('auth.amazon_open')">
+          </a>
+          <div>
+            <label class="block text-xs font-medium text-slate-700 dark:text-slate-400 mb-1" x-text="t('auth.amazon_return_label')"></label>
+            <textarea
+              x-model="amazonReturnUrl"
+              :placeholder="t('auth.amazon_return_placeholder')"
+              maxlength="8192"
+              rows="3"
+              spellcheck="false"
+              autocapitalize="off"
+              autocomplete="off"
+              class="glass-input w-full px-4 py-3 rounded-xl text-xs font-mono break-all"></textarea>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1" x-text="t('auth.amazon_return_help')"></p>
+          </div>
+          <button
+            @click="completeAmazonLogin()"
+            :disabled="authLoading || !amazonReturnUrl.trim()"
+            class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-600/30 transition disabled:opacity-50 cursor-pointer">
+            <span x-text="authLoading ? t('auth.amazon_completing') : t('auth.amazon_complete')"></span>
+          </button>
+          <button
+            @click="startAmazonLogin()"
+            :disabled="authLoading"
+            class="w-full text-center text-xs text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 cursor-pointer"
+            x-text="t('auth.amazon_restart')">
+          </button>
+          <button
+            @click="cancelAmazonLogin()"
+            class="w-full text-center text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white cursor-pointer"
+            x-text="t('auth.change_identifier')">
           </button>
         </div>
 

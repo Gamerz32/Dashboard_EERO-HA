@@ -585,7 +585,7 @@
   },
   "auth": {
     "title": "Accesso eero Mesh Suite",
-    "subtitle": "Autenticazione sicura ufficiale 2FA (One-Time Password)",
+    "subtitle": "Accedi con Amazon oppure richiedi un codice di verifica via email o SMS.",
     "identifier_label": "Email o telefono associati a eero:",
     "identifier_placeholder": "es. +393401234567 o mario@email.com",
     "send_otp": "Invia Codice OTP",
@@ -593,7 +593,20 @@
     "otp_label": "Codice a 6 cifre ricevuto:",
     "change_identifier": "← Modifica numero o email",
     "verify_otp": "Verifica & Accedi",
-    "verifying_otp": "Verifica in corso..."
+    "verifying_otp": "Verifica in corso...",
+    "amazon_or": "oppure",
+    "amazon_sign_in": "Accedi con Amazon",
+    "amazon_preparing": "Preparazione accesso Amazon...",
+    "amazon_instructions": "Accedi con l'account Amazon già collegato al tuo account eero. Quando Amazon torna alla propria pagina, copia l'indirizzo completo dal browser e incollalo qui sotto.",
+    "amazon_secure_note": "Inserisci la password Amazon solo nella pagina sicura di Amazon. Questa dashboard non te la chiederà mai.",
+    "amazon_open": "Apri accesso Amazon",
+    "amazon_return_label": "Indirizzo di ritorno Amazon",
+    "amazon_return_placeholder": "Incolla l'indirizzo completo https://www.amazon.com/ap/maplanding",
+    "amazon_return_help": "Il codice viene inviato a questa dashboard per completare l'accesso con Amazon ed eero, poi viene eliminato al termine del tentativo.",
+    "amazon_complete": "Completa accesso eero",
+    "amazon_completing": "Verifica accesso...",
+    "amazon_restart": "Avvia un nuovo accesso Amazon",
+    "amazon_start_failed": "Impossibile avviare l'accesso Amazon. Riprova."
   },
   "restart_modal": {
     "title": "Conferma Riavvio Rete Mesh",
@@ -1578,4 +1591,3 @@
     }
   }
 }
-

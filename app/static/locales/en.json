@@ -585,7 +585,7 @@
   },
   "auth": {
     "title": "eero Mesh Suite Login",
-    "subtitle": "Official secure 2FA authentication (One-Time Password)",
+    "subtitle": "Sign in with Amazon, or request an email or SMS verification code.",
     "identifier_label": "Email or Phone linked to eero:",
     "identifier_placeholder": "e.g. +1234567890 or name@email.com",
     "send_otp": "Send OTP Code",
@@ -593,7 +593,20 @@
     "otp_label": "6-digit code received:",
     "change_identifier": "← Edit phone or email",
     "verify_otp": "Verify & Login",
-    "verifying_otp": "Verifying..."
+    "verifying_otp": "Verifying...",
+    "amazon_or": "or",
+    "amazon_sign_in": "Sign in with Amazon",
+    "amazon_preparing": "Preparing Amazon sign-in...",
+    "amazon_instructions": "Sign in with the Amazon account already linked to your eero account. After Amazon returns to its page, copy the full address from your browser and paste it below.",
+    "amazon_secure_note": "Enter your Amazon password only on Amazon's secure sign-in page. This dashboard never asks for it.",
+    "amazon_open": "Open Amazon sign-in",
+    "amazon_return_label": "Amazon return address",
+    "amazon_return_placeholder": "Paste the full https://www.amazon.com/ap/maplanding address",
+    "amazon_return_help": "The code is sent to this dashboard to complete sign-in with Amazon and eero, then cleared after the attempt.",
+    "amazon_complete": "Complete eero sign-in",
+    "amazon_completing": "Checking sign-in...",
+    "amazon_restart": "Start a new Amazon sign-in",
+    "amazon_start_failed": "Could not start Amazon sign-in. Please try again."
   },
   "restart_modal": {
     "title": "Confirm Mesh Network Restart",
@@ -1578,4 +1591,3 @@
     }
   }
 }
-
