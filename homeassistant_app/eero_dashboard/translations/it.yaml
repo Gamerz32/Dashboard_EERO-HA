@@ -1,0 +1,52 @@
+configuration:
+  eero_user_token:
+    name: Token utente eero
+    description: Token avanzato opzionale; la maggior parte degli utenti può autenticarsi dalla dashboard.
+  eero_network_id:
+    name: ID rete eero
+    description: ID rete opzionale per gli account che devono selezionare una rete specifica.
+  dashboard_lang:
+    name: Lingua dashboard
+    description: Lingua utilizzata dalla dashboard (en oppure it).
+  poll_interval:
+    name: Intervallo di polling
+    description: Secondi tra gli aggiornamenti dei dati della dashboard.
+  tz:
+    name: Fuso orario
+    description: Fuso orario per report pianificati e log, ad esempio Europe/Rome.
+  require_local_auth:
+    name: Richiedi accesso dashboard
+    description: Aggiunge un secondo accesso dopo l'autenticazione di Home Assistant.
+  admin_user:
+    name: Nome utente amministratore
+    description: Nome utente dell'amministratore locale della dashboard.
+  admin_password:
+    name: Password amministratore
+    description: Password facoltativa dell'amministratore locale.
+  mqtt_enabled:
+    name: Abilita MQTT
+    description: Pubblica sensori Home Assistant e tracker di presenza dei client eero.
+  mqtt_broker_host:
+    name: Host broker MQTT
+    description: Lasciare vuoto per usare automaticamente il servizio MQTT di Home Assistant.
+  mqtt_broker_port:
+    name: Porta broker MQTT
+    description: Utilizzata con un broker MQTT configurato manualmente.
+  mqtt_username:
+    name: Nome utente MQTT
+    description: Credenziale MQTT manuale facoltativa; per impostazione predefinita vengono usate le credenziali del servizio Home Assistant.
+  mqtt_password:
+    name: Password MQTT
+    description: Password facoltativa del broker MQTT manuale.
+  mqtt_base_topic:
+    name: Topic MQTT di base
+    description: Topic radice usato per i dati della dashboard.
+  mqtt_ha_discovery_prefix:
+    name: Prefisso discovery MQTT
+    description: Prefisso dei topic di discovery MQTT di Home Assistant.
+  mqtt_discovery_enabled:
+    name: Discovery MQTT
+    description: Pubblica la configurazione retained per Home Assistant.
+  mqtt_publish_interval:
+    name: Intervallo pubblicazione MQTT
+    description: Secondi tra gli aggiornamenti MQTT.

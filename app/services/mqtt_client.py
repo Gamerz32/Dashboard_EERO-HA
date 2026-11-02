@@ -206,14 +206,16 @@ class MQTTService:
 
     def _get_device_dict(self) -> Dict[str, Any]:
         """Generates standard Home Assistant device block."""
-        return {
+        device = {
             "identifiers": ["eero_mesh_network"],
             "name": "eero Mesh System",
             "model": "eero Gateway & Mesh",
             "manufacturer": "eero / Amazon",
-            "sw_version": settings.app_version,
-            "configuration_url": "http://localhost:8000"
+            "sw_version": settings.app_version
         }
+        if settings.mqtt_configuration_url.strip():
+            device["configuration_url"] = settings.mqtt_configuration_url.strip().rstrip("/")
+        return device
 
     def _get_discovery_payloads(self) -> List[Dict[str, Any]]:
         """Returns the list of Home Assistant auto-discovery configs."""

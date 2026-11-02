@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
@@ -199,6 +200,17 @@ TEMPLATES_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
+
+@app.middleware("http")
+async def restrict_home_assistant_ingress(request: Request, call_next):
+    """Limit the HAOS package to Supervisor ingress and its local health check."""
+    if os.getenv("HA_INGRESS_ONLY", "false").lower() in {"true", "1", "yes"}:
+        client_host = request.client.host if request.client else ""
+        if client_host not in {"172.30.32.2", "127.0.0.1", "::1"}:
+            return JSONResponse({"detail": "Home Assistant ingress access required"}, status_code=403)
+    return await call_next(request)
+
+
 # Registrazione Router API
 app.include_router(auth.router)
 app.include_router(local_auth.router)
@@ -270,6 +282,7 @@ async def index_page(request: Request):
         name="index.html",
         context={
             "app_name": settings.app_name,
+            "ingress_path": request.headers.get("x-ingress-path", "").rstrip("/"),
             "app_version": settings.app_version,
             "build_number": settings.build_number,
             "full_version": settings.full_version,

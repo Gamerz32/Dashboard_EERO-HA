@@ -782,6 +782,12 @@ Un ringraziamento sincero a tutti gli utenti e contributori open-source che con 
 
 ---
 
+## 🏠 Home Assistant OS Add-on
+
+This repository now includes an editable Home Assistant OS add-on with a Home Assistant sidebar panel. It builds the dashboard from this repository's source when installed, so source and add-on settings can be maintained together.
+
+See the [Home Assistant add-on guide](homeassistant_app/eero_dashboard/README.md).
+
 ## 📄 Licenza / License
 
 Distribuito sotto licenza **MIT**. Consulta il file [LICENSE](LICENSE) per i dettagli completi.  

@@ -777,7 +777,7 @@ document.addEventListener('alpine:init', () => {
           new ResizeObserver(() => this.fitDeviceNameColumn()).observe(scroll);
         }
       });
-      if (typeof window !== 'undefined' && window.location && window.location.pathname === '/') {
+      if (typeof window !== 'undefined' && window.location && (window.EERO_APP_PATHNAME ? window.EERO_APP_PATHNAME() : window.location.pathname) === '/') {
         window.history.replaceState({}, '', this.routes.overview);
       }
       if (this.currentTab === 'devices') {
@@ -1249,7 +1249,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     tabFromPath() {
-      const path = (typeof window !== 'undefined' && window.location ? window.location.pathname : '').replace(/\/$/, '') || '/dashboard';
+      const path = (typeof window !== 'undefined' && window.location ? (window.EERO_APP_PATHNAME ? window.EERO_APP_PATHNAME() : window.location.pathname) : '').replace(/\/$/, '') || '/dashboard';
       if (path === '/eero-news') return 'news';
       if (path === '/settings') return 'settings-controls';
       if (path === '/settings/export' || path === '/export') return 'settings-export';
@@ -1292,7 +1292,7 @@ document.addEventListener('alpine:init', () => {
     syncDeviceFiltersToUrl() {
       if (this.currentTab !== 'devices' || typeof window === 'undefined' || !window.location) return;
       const url = this.deviceFiltersUrl();
-      if (`${window.location.pathname}${window.location.search}` !== url) {
+      if (`${(window.EERO_APP_PATHNAME ? window.EERO_APP_PATHNAME() : window.location.pathname)}${window.location.search}` !== url) {
         window.history.replaceState({}, '', url);
       }
     },
@@ -1342,7 +1342,7 @@ document.addEventListener('alpine:init', () => {
         this.sidebarCollapsed = true;
       }
       const url = tab === 'devices' ? this.deviceFiltersUrl() : this.routes[tab];
-      if (updateUrl && typeof window !== 'undefined' && window.history && `${window.location.pathname}${window.location.search}` !== url) {
+      if (updateUrl && typeof window !== 'undefined' && window.history && `${(window.EERO_APP_PATHNAME ? window.EERO_APP_PATHNAME() : window.location.pathname)}${window.location.search}` !== url) {
         window.history.pushState({}, '', url);
       }
       if (tab === 'speedtest') {
