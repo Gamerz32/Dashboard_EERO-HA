@@ -4,6 +4,15 @@ Tutte le modifiche rilevanti, i miglioramenti e le correzioni di bug apportate a
 
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/) e aderisce al versionamento semantico.
 
+## [1.6.4] - 2026-11-02
+
+### Added
+* Added Amazon account sign-in using a short-lived PKCE authorization code. Amazon credentials stay on Amazon, and the eero session is stored using the existing protected session file.
+
+### Fixed
+* Kept the email/SMS verification option available for eero accounts that use it.
+* Updated the displayed application version to 1.6.4.
+
 ## [1.6.2] - 2026-10-23
 
 ### 🚀 Proposta Intelligente Aggiornamenti con Changelog Ridotto & Decisione Utente
