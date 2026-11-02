@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
 from app.config import settings
-from app.services.eero_client import eero_client
+from app.services.eero_client import AmazonLoginRequired, eero_client
 from app.services.rate_limiter import cloud_auth_limiter, get_client_ip
 from app.i18n import log_event, tr
 
@@ -181,6 +181,14 @@ async def request_login(payload: LoginRequest, request: Request):
     try:
         res = await eero_client.request_login_code(payload.login.strip())
         return res
+    except AmazonLoginRequired as exc:
+        try:
+            result = eero_client.start_amazon_login()
+            result["auth_method"] = "amazon"
+            result["message"] = str(exc)
+            return result
+        except ValueError as amazon_error:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(amazon_error))
     except Exception as e:
         log_event(logger, logging.ERROR, "log_system.eero_login_failed", error=e)
         raise HTTPException(status_code=400, detail=str(e))
