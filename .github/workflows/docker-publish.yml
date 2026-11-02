@@ -22,6 +22,8 @@ env:
 
 jobs:
   build-and-push:
+    # Publish the upstream Docker Hub image only from its owning repository.
+    if: github.repository == 'EnricoFlammini/Dashboard_EERO'
     runs-on: ubuntu-latest
     permissions:
       contents: read
