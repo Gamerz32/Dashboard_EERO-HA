@@ -1,6 +1,6 @@
 # eero Dashboard for Home Assistant
 
-This repository contains the editable source for the eero Dashboard Home Assistant app. The installable app entry is in [Gamerz32/Game-Server-Manager-HA](https://github.com/Gamerz32/Game-Server-Manager-HA), the **Gamerz32 Home Assistant Apps** repository.
+This repository contains the editable source for the eero Dashboard Home Assistant app. The installable app entry is in [Gamerz32/Gamerz32-HA-Apps](https://github.com/Gamerz32/Gamerz32-HA-Apps), the **Gamerz32 Home Assistant Apps** repository.
 
 ## Features
 
@@ -12,7 +12,7 @@ This repository contains the editable source for the eero Dashboard Home Assista
 ## Install in Home Assistant
 
 1. Open **Settings → Apps → App Store → Repositories**.
-2. Add the **Gamerz32 Home Assistant Apps** repository: https://github.com/Gamerz32/Game-Server-Manager-HA
+2. Add the **Gamerz32 Home Assistant Apps** repository: https://github.com/Gamerz32/Gamerz32-HA-Apps
 3. Refresh the app store and install **eero Dashboard**.
 4. Start the app and open **eero Dashboard** from the Home Assistant sidebar.
 
@@ -26,7 +26,7 @@ Enable a Home Assistant MQTT broker and the MQTT integration to create sensors a
 
 ## Edit the source and update the app
 
-Make application changes in this repository and push them to its main branch. The Home Assistant app package in [Gamerz32/Game-Server-Manager-HA](https://github.com/Gamerz32/Game-Server-Manager-HA) downloads this repository's main branch during its image build.
+Make application changes in this repository and push them to its main branch. The Home Assistant app package in [Gamerz32/Gamerz32-HA-Apps](https://github.com/Gamerz32/Gamerz32-HA-Apps) downloads this repository's main branch during its image build.
 
 After a source change, bump the version in **eero_dashboard/config.yaml** in the app-store repository and update the app in Home Assistant. The version change triggers a rebuild from the latest source. The Home Assistant host needs internet access to GitHub and Python package indexes during the build.
 
@@ -34,4 +34,4 @@ After a source change, bump the version in **eero_dashboard/config.yaml** in the
 
 The dashboard is based on Enrico Flammini's [eero Custom Dashboard & Mesh Management Suite](https://github.com/EnricoFlammini/Dashboard_EERO), distributed under the MIT license. This is an independent community project and is not affiliated with eero or Amazon.
 
-The previous full project README, including the standalone Docker and Docker Compose instructions and extended feature reference, is preserved in [UPSTREAM_README.md](UPSTREAM_README.md). For Home Assistant installation and configuration, use this README and the [app setup guide](https://github.com/Gamerz32/Game-Server-Manager-HA/blob/main/eero_dashboard/README.md).
+The previous full project README, including the standalone Docker and Docker Compose instructions and extended feature reference, is preserved in [UPSTREAM_README.md](UPSTREAM_README.md). For Home Assistant installation and configuration, use this README and the [app setup guide](https://github.com/Gamerz32/Gamerz32-HA-Apps/blob/main/eero_dashboard/README.md).
