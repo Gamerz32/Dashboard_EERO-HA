@@ -31,8 +31,8 @@ RUN pip install --no-cache-dir --upgrade "pip>=26.2.0" "setuptools>=83.0.0" whee
 FROM python:3.12-alpine AS runner
 
 # Build arguments per versionamento e build number (iniettati in CI/CD)
-ARG APP_VERSION="1.6.4"
-ARG BUILD_NUMBER="3"
+ARG APP_VERSION="1.6.5"
+ARG BUILD_NUMBER="4"
 # Source branch/commit shown on the Updates page (.git is not copied into the image)
 ARG GIT_BRANCH=""
 ARG GIT_COMMIT=""
