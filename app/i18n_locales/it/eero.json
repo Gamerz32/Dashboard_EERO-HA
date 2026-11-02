@@ -31,5 +31,15 @@
   "target_profile_not_found": "Profilo target '{profile_id}' non trovato.",
   "no_network_selected": "Nessuna rete selezionata",
   "node_name_fallback": "Nodo eero",
-  "device_name_fallback": "Dispositivo"
+  "device_name_fallback": "Dispositivo",
+  "amazon_start_failed": "Impossibile avviare l'accesso Amazon. Riprova.",
+  "amazon_invalid_return": "Incolla l'indirizzo completo della pagina di ritorno Amazon e riprova.",
+  "amazon_flow_expired": "L'accesso Amazon è scaduto o è già stato usato. Avvia un nuovo accesso.",
+  "amazon_cancelled": "L'accesso Amazon è stato annullato o rifiutato.",
+  "amazon_exchange_failed": "Impossibile completare l'accesso Amazon (HTTP {status}: {error}). Avvia di nuovo l'accesso.",
+  "amazon_account_not_linked": "Amazon ha accettato l'accesso, ma questo account Amazon non è collegato a un account eero esistente. Usa l'account Amazon già collegato a eero.",
+  "amazon_eero_login_failed": "eero non ha accettato l'accesso Amazon (HTTP {status}: {error}).",
+  "amazon_session_missing": "eero non ha restituito una sessione. Avvia di nuovo l'accesso.",
+  "amazon_session_invalid": "eero ha rifiutato la sessione di accesso. Riprova.",
+  "amazon_complete_failed": "Impossibile completare l'accesso Amazon. Avvia un nuovo accesso."
 }
