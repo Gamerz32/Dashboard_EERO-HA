@@ -606,7 +606,8 @@
     "amazon_complete": "Completa accesso eero",
     "amazon_completing": "Verifica accesso...",
     "amazon_restart": "Avvia un nuovo accesso Amazon",
-    "amazon_start_failed": "Impossibile avviare l'accesso Amazon. Riprova."
+    "amazon_start_failed": "Impossibile avviare l'accesso Amazon. Riprova.",
+    "amazon_fallback": "L'accesso con email o telefono è stato rifiutato. La dashboard è passata all'accesso Amazon: usa l'account Amazon già collegato a eero."
   },
   "restart_modal": {
     "title": "Conferma Riavvio Rete Mesh",

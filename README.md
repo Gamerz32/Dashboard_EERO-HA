@@ -20,7 +20,7 @@ The app's entry in the app store uses Home Assistant ingress, which provides sid
 
 ## First run and MQTT
 
-Sign in with the Amazon account already linked to eero, or use email/SMS verification if your eero account supports it. For Amazon sign-in, open Amazon from the dashboard, sign in on Amazon, then copy the full address shown after Amazon returns and paste it back into the dashboard. Your Amazon password is entered only on Amazon. The dashboard sends the short-lived, one-use authorization code to Amazon and eero to create the eero session, then clears it. The eero cloud API is required; an existing eero token and network ID are optional advanced settings.
+Sign in with the Amazon account already linked to eero, or use email/SMS verification if your eero account supports it. If eero rejects an email/SMS request with `error.login.unknown`, the dashboard automatically opens the Amazon sign-in flow. For Amazon sign-in, open Amazon from the dashboard, sign in on Amazon, then copy the full address shown after Amazon returns and paste it back into the dashboard. Your Amazon password is entered only on Amazon. The dashboard sends the short-lived, one-use authorization code to Amazon and eero to create the eero session, then clears it. The eero cloud API is required; an existing eero token and network ID are optional advanced settings.
 
 Enable a Home Assistant MQTT broker and the MQTT integration to create sensors and device trackers. When the Supervisor provides an MQTT service, the app uses its connection details. Dashboard data and its saved eero session are stored in the app's persistent data directory and included in Home Assistant app backups.
 

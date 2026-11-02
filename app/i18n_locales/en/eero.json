@@ -41,5 +41,6 @@
   "amazon_eero_login_failed": "eero did not accept the Amazon sign-in (HTTP {status}: {error}).",
   "amazon_session_missing": "eero did not return a session. Please start again.",
   "amazon_session_invalid": "eero rejected the sign-in session. Please start again.",
-  "amazon_complete_failed": "Amazon sign-in could not be completed. Please start a new sign-in."
+  "amazon_complete_failed": "Amazon sign-in could not be completed. Please start a new sign-in.",
+  "amazon_otp_unavailable": "This eero account cannot use email/SMS sign-in. Continue with Amazon using the account linked to eero."
 }

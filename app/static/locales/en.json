@@ -606,7 +606,8 @@
     "amazon_complete": "Complete eero sign-in",
     "amazon_completing": "Checking sign-in...",
     "amazon_restart": "Start a new Amazon sign-in",
-    "amazon_start_failed": "Could not start Amazon sign-in. Please try again."
+    "amazon_start_failed": "Could not start Amazon sign-in. Please try again.",
+    "amazon_fallback": "The email or phone sign-in was rejected. The dashboard has switched to Amazon sign-in; use the Amazon account already linked to eero."
   },
   "restart_modal": {
     "title": "Confirm Mesh Network Restart",

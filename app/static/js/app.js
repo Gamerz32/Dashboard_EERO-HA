@@ -1451,6 +1451,23 @@ document.addEventListener('alpine:init', () => {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || this.t('toasts.otp_request_failed'));
+        if (data.auth_method === 'amazon') {
+          this.amazonAuthStep = true;
+          this.amazonSignInUrl = data.authorization_url || '';
+          this.amazonFlowId = data.flow_id || '';
+          this.amazonReturnUrl = '';
+          this.otpSent = false;
+          this.tempUserToken = null;
+          if (!this.amazonSignInUrl || !this.amazonFlowId) {
+            throw new Error(this.t('auth.amazon_start_failed'));
+          }
+          this.showToast(
+            this.t('auth.amazon_sign_in'),
+            data.message || this.t('auth.amazon_fallback'),
+            'info'
+          );
+          return;
+        }
         if (data.user_token) {
           this.tempUserToken = data.user_token;
         }

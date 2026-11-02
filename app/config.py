@@ -35,7 +35,7 @@ try:
     class Settings(BaseSettings):
         """Application settings with environment variable fallbacks."""
         app_name: str = "eero Custom Dashboard & Management Suite"
-        app_version: str = os.getenv("APP_VERSION", "1.6.4")
+        app_version: str = os.getenv("APP_VERSION", "1.6.5")
         build_number: str = _get_default_build_number()
         debug: bool = False
         

@@ -4,6 +4,11 @@ Tutte le modifiche rilevanti, i miglioramenti e le correzioni di bug apportate a
 
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/) e aderisce al versionamento semantico.
 
+## [1.6.5] - 2026-11-02
+
+### Fixed
+* Automatically switch to Amazon sign-in when eero rejects the email/SMS request with `error.login.unknown`, while preserving OTP for accounts that support it.
+
 ## [1.6.4] - 2026-11-02
 
 ### Added
