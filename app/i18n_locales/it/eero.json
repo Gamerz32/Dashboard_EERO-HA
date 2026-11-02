@@ -41,5 +41,6 @@
   "amazon_eero_login_failed": "eero non ha accettato l'accesso Amazon (HTTP {status}: {error}).",
   "amazon_session_missing": "eero non ha restituito una sessione. Avvia di nuovo l'accesso.",
   "amazon_session_invalid": "eero ha rifiutato la sessione di accesso. Riprova.",
-  "amazon_complete_failed": "Impossibile completare l'accesso Amazon. Avvia un nuovo accesso."
+  "amazon_complete_failed": "Impossibile completare l'accesso Amazon. Avvia un nuovo accesso.",
+  "amazon_otp_unavailable": "Questo account eero non può usare l'accesso via email/SMS. Continua con Amazon usando l'account collegato a eero."
 }
