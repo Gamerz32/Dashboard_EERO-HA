@@ -31,5 +31,15 @@
   "target_profile_not_found": "Target profile '{profile_id}' not found.",
   "no_network_selected": "No network selected",
   "node_name_fallback": "eero node",
-  "device_name_fallback": "Device"
+  "device_name_fallback": "Device",
+  "amazon_start_failed": "Could not start Amazon sign-in. Please try again.",
+  "amazon_invalid_return": "Paste the complete address from Amazon's return page and try again.",
+  "amazon_flow_expired": "This Amazon sign-in expired or was already used. Start a new sign-in.",
+  "amazon_cancelled": "Amazon sign-in was cancelled or declined.",
+  "amazon_exchange_failed": "Amazon sign-in could not be completed (HTTP {status}: {error}). Please start again.",
+  "amazon_account_not_linked": "Amazon accepted the sign-in, but this Amazon account is not linked to an existing eero account. Use the Amazon account already linked to eero.",
+  "amazon_eero_login_failed": "eero did not accept the Amazon sign-in (HTTP {status}: {error}).",
+  "amazon_session_missing": "eero did not return a session. Please start again.",
+  "amazon_session_invalid": "eero rejected the sign-in session. Please start again.",
+  "amazon_complete_failed": "Amazon sign-in could not be completed. Please start a new sign-in."
 }
