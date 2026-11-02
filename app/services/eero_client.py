@@ -26,6 +26,10 @@ EERO_API_BASE = "https://api-user.e2ro.com/2.2"
 _IPV6_ULA_NET = ipaddress.IPv6Network("fc00::/7")
 
 
+class AmazonLoginRequired(ValueError):
+    """Raised when eero rejects the OTP login and Amazon sign-in should be offered."""
+
+
 def parse_speed_mbps(val: Any) -> int:
     """Parses link speed strings, P-prefixed codes (P2500, P1000), or integers to Mbps.
     
@@ -766,11 +770,21 @@ class EeroClient:
                 headers=self._get_headers()
             )
             if resp.status_code != 200:
-                error_msg = resp.text
+                payload: Dict[str, Any] = {}
                 try:
-                    error_msg = resp.json().get("error", resp.text)
-                except Exception:
+                    parsed = resp.json()
+                    if isinstance(parsed, dict):
+                        payload = parsed
+                except ValueError:
                     pass
+
+                error_code = self._amazon_error_code(payload)
+                if resp.status_code == 401 and error_code == "error.login.unknown":
+                    raise AmazonLoginRequired(tr("eero.amazon_otp_unavailable"))
+
+                error_msg = payload.get("error")
+                if not isinstance(error_msg, str):
+                    error_msg = error_code if error_code != "unknown_error" else resp.text
                 raise ValueError(tr("eero.login_request_failed", status=resp.status_code, error=error_msg))
 
             data = resp.json().get("data", {})
